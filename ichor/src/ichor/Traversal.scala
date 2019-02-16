@@ -1,6 +1,6 @@
 package ichor
 
-import ichor.core.{Block, Sym}
+import ichor.core._
 
 abstract class Traversal extends Pass {
   def recurse: Boolean = true
@@ -13,11 +13,11 @@ abstract class Traversal extends Pass {
   def visit(block: Block): Unit = {
     block.stms.foreach(traverse)
   }
-  private def traverse(sym: Sym): Unit = {
-    visit(sym)
-    if (recurse) sym.op.foreach(_.blocks.foreach(visit))
+  private def traverse(ref: Ref): Unit = {
+    visit(ref)
+    if (recurse) ref.rhs.foreach(_.blocks.foreach(visit))
   }
 
-  def visit(sym: Sym): Unit
+  def visit(ref: Ref): Unit
 
 }

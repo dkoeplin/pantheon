@@ -2,12 +2,21 @@ import mill._, scalalib._
 
 trait CommonModule extends ScalaModule {
   override def scalaVersion = "2.13.0-M5"
+
+  override def ivyDeps = Agg(
+    ivy"com.lihaoyi::utest::0.6.6",
+    ivy"org.scala-lang.modules::scala-parser-combinators:1.1.1"
+  )
+
+  def testFrameworks = Seq("utest.runner.Framework")
+
   override def scalacOptions = Seq(
     "-target:jvm-1.8",                   // JVM 1.8
     "-encoding", "utf-8",                // Specify character encoding used by source files.
     "-unchecked",                        // Enable additional warnings.
     "-deprecation",                      // Enable warnings on deprecated usage.
     "-feature",                          // Enable warnings for features requiring explicit import.
+    "-language:implicitConversions",     // Enable implicit conversions.
     "-Xfatal-warnings",                  // Change warnings to errors.
     "-Yno-generic-signatures",           // Suppress generation of generic signatures in bytecode.
     "-Xfuture",                          // Enable "future language features".
@@ -31,13 +40,10 @@ trait CommonModule extends ScalaModule {
     "-Xlint:type-parameter-shadow",      // A local type parameter shadows a type already in scope.
     "-Ywarn-dead-code",                  // Warn when dead code is identified.
     "-Ywarn-extra-implicit",             // Warn when more than one implicit parameter section is defined.
-    "-Ywarn-numeric-widen",              // Warn when numerics are widened.
     "-Ywarn-unused:implicits",           // Warn if an implicit parameter is unused.
     "-Ywarn-unused:imports",             // Warn if an import selector is not referenced.
     "-Ywarn-unused:locals",              // Warn if a local definition is unused.
-    "-Ywarn-unused:params",              // Warn if a value parameter is unused.
-    "-Ywarn-unused:privates",            // Warn if a private member is unused.
-    "-Ywarn-value-discard"               // Warn when non-Unit expression results are unused.
+    "-Ywarn-unused:privates"             // Warn if a private member is unused.
   )
 }
 
@@ -46,12 +52,7 @@ object utils extends CommonModule {
 }
 
 object ichor extends CommonModule {
-  override def moduleDeps = Seq(utils)
-  override def ivyDeps = Agg(
-    ivy"com.lihaoyi::utest::0.6.6",
-    ivy"org.scala-lang.modules::scala-parser-combinators:1.1.1"
-  )
 
-  def testFrameworks = Seq("utest.runner.Framework")
+  override def moduleDeps = Seq(utils)
 
 }

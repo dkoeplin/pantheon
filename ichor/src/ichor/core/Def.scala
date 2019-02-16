@@ -18,5 +18,5 @@ abstract class Def extends Product with Serializable {
 
   def blocks: Iterator[Block] = this.productIterator.collect{case b: Block => b}
 
-  def effects: Effects = blocks.map(_.effects).fold(Effects.Pure){_ andAlso _} andAlso Effects.Reads(mutableInputs:_*)
+  def effects: Effects = blocks.map(_.effects).foldLeft(Effects.Pure){_ andAlso _} andAlso Effects.Reads(mutableInputs:_*)
 }

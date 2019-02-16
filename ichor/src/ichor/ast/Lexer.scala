@@ -1,9 +1,7 @@
 package ichor.ast
-import java.io.{BufferedReader, FileReader}
 
 import scala.util.parsing.combinator.Parsers
 import scala.util.parsing.input.CharArrayReader.EofCh
-import scala.util.parsing.input.{Position, Reader, StreamReader}
 
 class Lexer extends Parsers {
   override type Elem  = Char
@@ -35,7 +33,7 @@ class Lexer extends Parsers {
   /** Captures a digit. */
   val digit: Parser[Elem] = elem("digit", _.isDigit)
   /** Captures a letter. */
-  val letter: Parser[Elem]    = elem("letter", _.isLetter)
+  val letter: Parser[Elem] = elem("letter", _.isLetter)
   /** Captures an uppercase letter. */
   val uppercase: Parser[Elem] = elem("uppercase", _.isUpper)
   /** Captures a lowercase letter. */
@@ -70,8 +68,9 @@ class Lexer extends Parsers {
       | symbolicFuncName
     )
 
-  val typ: Parser[Type]
-  = uppercase ~ rep(identChar) ^^ { case first ~ rest => Type(first :: rest mkString "") }
+  val typ: Parser[Type] = {
+    uppercase ~ rep(identChar) ^^ { case first ~ rest => Type(first :: rest mkString "") }
+  }
 
   val whitespace: Parser[Any] = rep[Any](
     whitespaceChar
@@ -102,32 +101,4 @@ class Lexer extends Parsers {
       | '\"' ~> failure("unclosed string literal")
       | failure("illegal character")
     )
-
-  /** A reader that produces `Token`s from a stream of characters. */
-  class Scanner(file: String, in: Reader[Char]) extends Reader[Token] {
-    def this(file: String) = this(file, StreamReader(new BufferedReader(new FileReader(file))))
-
-    /** Convenience constructor (makes a character reader out of the given string) */
-    //def this(in: String) = this(new CharArrayReader(in.toCharArray))
-
-    private val (tok, rest1, rest2) = whitespace(in) match {
-      case Success(_, next) => token(next) match {
-        case Success(t, in2) => (t, next, in2)
-        case ns: NoSuccess   => (ErrorToken(ns.msg), ns.next, skip(ns.next))
-      }
-      case ns: NoSuccess     => (ErrorToken(ns.msg), ns.next, skip(ns.next))
-    }
-    private def skip(in: Reader[Char]): Reader[Char] = if (in.atEnd) in else in.rest
-
-    override def source: java.lang.CharSequence = in.source
-    override def offset: Int = in.offset
-    def first: Token = tok
-    def rest = new Scanner(file, rest2)
-    def pos: Position = rest1.pos
-    def atEnd: Boolean = in.atEnd || (whitespace(in) match { case Success(_, in1) => in1.atEnd case _ => false })
-
-    override def toString: String = s"$file:${pos.line}:${pos.column}"
-  }
-
-  def scanner(file: String): Scanner = new Scanner(file)
 }

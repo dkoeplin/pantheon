@@ -1,5 +1,7 @@
 package ichor.ast
 
+import ichor.core.Graph
+
 import scala.util.parsing.combinator.Parsers
 import scala.collection.mutable
 import scala.util.parsing.input.Reader
@@ -8,11 +10,12 @@ class Parser extends Parsers {
   type Elem = Token
 
   private val lexer = new Lexer
+
   private val keywordCache = mutable.HashMap[String, Parser[String]]()
 
   /** A parser which matches a single keyword token.
     *
-    * @param chars    The character string making up the matched keyword.
+    * @param chars The character string making up the matched keyword.
     * @return a `Parser` that matches the given string
     */
   implicit def keyword(chars : String): Parser[String] = {
@@ -30,7 +33,7 @@ class Parser extends Parsers {
   }) ^^ (_.asInstanceOf[Term])
 
   /** Matches a type. */
-  val typ:  Parser[Type] = elem("type", _.isInstanceOf[Type]) ^^ (_.asInstanceOf[Type])
+  val typ: Parser[Type] = elem("type", _.isInstanceOf[Type]) ^^ (_.asInstanceOf[Type])
 
   /** A parser which matches a numeric literal */
   val number: Parser[NumericLiteral] = elem("number", _.isInstanceOf[NumericLiteral]) ^^ (_.asInstanceOf[NumericLiteral])
@@ -119,7 +122,8 @@ class Parser extends Parsers {
   def prefix: Parser[AST] = prefixTerm ~ expr2 ^^ {case t ~ e => FuncCall(Some(e), Term("prefix_"+t), None) }
 
   def apply(file: String): Option[Scope] = {
-    val scanner: Reader[Token] = lexer.scanner(file)
+    val IR: Graph = new Graph
+    val scanner: Reader[Token] = new Scanner(file, lexer)
 
     var prev: (Int,Int) = (0,0)
     while (!scanner.atEnd) {
@@ -127,12 +131,12 @@ class Parser extends Parsers {
         program(scanner) match {
           case Success(prog, _)   => return Some(prog)
           case Failure(msg, next) if prev != (next.pos.line,next.pos.column) =>
-            println(file + ":" + next.pos.line + ": " + msg)
-            println(next.pos.longString)
+            IR.error(s"$file:${next.pos.line}:${next.pos.column}: $msg")
+            IR.error(next.pos)
             prev = (next.pos.line,next.pos.column)
           case Error(msg,next) if prev != (next.pos.line,next.pos.column) =>
-            println(file + ":" + next.pos.line + ": " + msg)
-            println(next.pos.longString)
+            IR.error(s"$file:${next.pos.line}:${next.pos.column}: $msg")
+            IR.error(next.pos)
             prev = (next.pos.line,next.pos.column)
           case _ => return None
         }
@@ -140,13 +144,13 @@ class Parser extends Parsers {
       catch {
         case t: Throwable =>
           val pos = scanner.pos
-          println(s"$file:${pos.line}:${pos.column}: Parser encountered error.")
-          println(pos.longString)
-          println(t)
+          IR.bug(s"$file:${pos.line}:${pos.column}: Parser encountered error.")
+          IR.bug(pos.longString)
+          IR.bug(t)
           val trace = t.getStackTrace
-          trace.take(10).foreach{line => println(line) }
-          if (trace.length > 10) println("...")
-          trace.takeRight(10).foreach{line => println(line) }
+          trace.take(10).foreach{line => IR.bug(line) }
+          if (trace.length > 10) IR.bug("...")
+          trace.takeRight(10).foreach{line => IR.bug(line) }
 
           var rest = scanner
           while (!rest.atEnd) {

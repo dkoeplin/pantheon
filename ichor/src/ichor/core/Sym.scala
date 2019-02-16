@@ -33,7 +33,7 @@ sealed abstract class Val extends Sym
 
 case object Error extends Val
 
-final class Const(c: Any, tp: Type) extends Val {
+final class Const(val c: Any, val tp: Type) extends Val {
   override def imm: Option[Any] = Some(c)
   override def toString: String = escapeConst(c)
 
@@ -44,7 +44,7 @@ final class Const(c: Any, tp: Type) extends Val {
   override def hashCode(): Int = (c,tp).hashCode()
 }
 
-final class Param(var c: Any, tp: Type) extends Val {
+final class Param(var c: Any, val tp: Type) extends Val {
   override def imm: Option[Any] = Some(c)
   override def toString: String = escapeConst(c)
 }

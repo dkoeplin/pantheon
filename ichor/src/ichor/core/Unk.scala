@@ -1,5 +1,6 @@
 package ichor.core
 
-object Unk extends Type {
-
+case object Unk extends Type {
+  override def tArgs: Seq[Type] = Nil
+  override def tParents: Seq[Type] = Nil
 }

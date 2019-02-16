@@ -1,9 +1,9 @@
-def function(in a, in b, out c) = {
-  a:
+Out function(In a, In b, Out c) = {
+
 }
 
 
-
+/*
 val function = {(a: Matrix, b: Matrix, c: Matrix): Matrix =>
 
 }
@@ -70,6 +70,7 @@ Array(Int)$ my_function = {(Matrix a, Matrix b, Matrix c, Int e, Int j, Int f, I
   *
   **/
 
+/*
 Def[Array] my_function = (...) =>
 
 
@@ -77,4 +78,4 @@ Def<Array> my_function =
 
 $Array$ my_function = {
 
-}
+}*/

@@ -1,6 +1,16 @@
 package ichor.core
 
-class Graph {
+
+class Graph extends Config {
+  /** Current compiler phase */
+  var phase: Int = 0
+
+  /** Current compiler pass */
+  var pass: Int = 0
+
+  def paddedPass: String = paddedPass(pass)
+  def paddedPass(pass: Int): String = { val p = pass.toString; "0"*(4 - p.length) + p }
+
   /** Statements in the current scope. Order is most recent to least recent. */
   var scope: Vector[Ref] = Vector.empty
 
@@ -12,6 +22,7 @@ class Graph {
 
   /** Flow rules. */
   var flows: Vector[Flow] = Vector.empty
+
 
 
   private def register(lhs: Option[Ref], df: Def, flow: Sym => Unit = _ => ()): Sym = Option(df.rewrite).getOrElse{
