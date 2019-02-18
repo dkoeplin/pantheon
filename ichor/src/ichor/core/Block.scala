@@ -1,3 +1,3 @@
 package ichor.core
 
-case class Block(stms: Seq[Ref], result: Ref, effects: Effects)
+class Block(val inputs: Seq[Dyn], val stms: Seq[Ref], val result: Sym, val effects: Effects)

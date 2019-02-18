@@ -1,5 +1,7 @@
 package ichor
 
+import scala.collection.mutable
+
 package object core {
   type Stm = (Ref,Def)
 
@@ -42,6 +44,35 @@ package object core {
     case i: Iterable[_] => i.flatMap(e => collectBlocks(e))
     case p: Product     => p.productIterator.flatMap(e => collectBlocks(e))
     case _ => Nil
+  }.toSeq
+
+
+  /** Computes an *external* summary for a sequence of nodes with effects in a single scope.
+    * Ignores reads/writes on data allocated within the scope.
+    * TODO: May want to include reads/writes on values allocated inside if they escape.
+    */
+  def summzarizeScopeEffects(impure: Iterable[Sym]): Effects = {
+    val allocs = mutable.HashSet.empty[Sym]
+    var simple = false
+    var global = false
+    var throws = false
+    val reads  = mutable.HashSet.empty[Sym]
+    val writes = mutable.HashSet.empty[Sym]
+    impure.foreach{s =>
+      if (s.isMutable) allocs += s
+      simple ||= simple
+      global ||= global
+      throws ||= throws
+      reads ++= s.effects.reads
+      writes ++= s.effects.writes
+    }
+    Effects(
+      simple = simple,
+      global = global,
+      throws = throws,
+      reads  = reads.toSet diff allocs,
+      writes = writes.toSet diff allocs,
+    )
   }
 
 }

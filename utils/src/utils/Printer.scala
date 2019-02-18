@@ -25,7 +25,7 @@ class Printer(pre: String, enable: => Boolean) extends PrettyPrinter {
   def tab[A](x: => Any)(func: => A): A = {
     val savePrefix = prefix
     apply(x)
-    prefix = "  "+prefix
+    if (enable) prefix = "  "+prefix
     val result = func
     prefix = savePrefix
     result
@@ -52,3 +52,5 @@ class Printer(pre: String, enable: => Boolean) extends PrettyPrinter {
   def withStream(s: PrintStream): Printer = { stream = s; this }
 
 }
+
+object NullPrinter extends Printer("", enable = false)

@@ -60,7 +60,7 @@ case class Effects(
     * simple - include the *most recent* previous simple effect as a scheduling dependency of a simple effect
     * global - include ALL global effects as scheduling dependencies of a global effect
     */
-  def inContext(impure: Vector[Sym]): Effects = {
+  def inContext(impure: Iterable[Sym]): Effects = {
     val antideps = if (global) impure
     else {
       val accesses = reads ++ writes  // Cannot read/write prior to allocation
