@@ -1,8 +1,6 @@
 package ichor.core
 
-abstract class Def extends Product with Serializable {
-  final type Tx = ichor.Transformer
-
+trait Def extends Product with Serializable {
   def inputs: Seq[Sym] = syms(productIterator).toSeq
 
   def mutableInputs: Seq[Sym] = inputs.filter(_.isMutable)
@@ -19,4 +17,8 @@ abstract class Def extends Product with Serializable {
   def blocks: Iterator[Block] = this.productIterator.collect{case b: Block => b}
 
   def effects: Effects = blocks.map(_.effects).foldLeft(Effects.Pure){_ andAlso _} andAlso Effects.Reads(mutableInputs:_*)
+}
+
+object Def {
+  def unapply(sym: Sym): Option[Def] = sym.rhs
 }

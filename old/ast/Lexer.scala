@@ -58,7 +58,7 @@ class Lexer extends Parsers {
   val symbolicFuncName: Parser[Token] = (
     fc ~ fc.*  ^^ {case first ~ rest => Term(first :: rest mkString "") }
       //| fc ~ fc.+ ^^ {case first ~ rest => Term(first :: rest mkString "") }
-      | dot ~ dot   ^^ {_ => Term("..") }
+      | dot ~ dot   ^^ {_ => Term("") }
     )
 
   def identifier(chars: String): Token = if (keywords.contains(chars)) Keyword(chars) else Term(chars)

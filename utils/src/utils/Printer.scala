@@ -1,7 +1,6 @@
 package utils
 
 import java.io.{FileOutputStream, PrintStream}
-import scala.util.parsing.input.Position
 
 import utils.io.NullPrintStream
 
@@ -13,10 +12,10 @@ class Printer(pre: String, enable: => Boolean) extends PrettyPrinter {
   var count: Int = 0
 
   override def apply(x: => Any): Unit = if (enable) super.apply(x)
-  override def apply(ctx: Position, x: => Any): Unit = if (enable) super.apply(ctx,x)
+  override def apply(ctx: Ctx, x: => Any): Unit = if (enable) super.apply(ctx,x)
 
   /** Print source context content. Increment count for this printer if showCaret is true. */
-  override def apply(ctx: Position): Unit = {
+  override def apply(ctx: Ctx): Unit = {
     if (enable) super.apply(ctx)
     count += 1
   }
@@ -53,4 +52,4 @@ class Printer(pre: String, enable: => Boolean) extends PrettyPrinter {
 
 }
 
-object NullPrinter extends Printer("", enable = false)
+class NullPrinter extends Printer("", enable = false)

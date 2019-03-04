@@ -18,42 +18,50 @@ class Graph(var cfg: Config) {
   def paddedPass(pass: Int): String = { val p = pass.toString; "0"*(4 - p.length) + p }
 
   /** Statements in the current scope. Order is most recent to least recent. */
-  protected val scopes: mutable.Stack[mutable.ArrayBuffer[Ref]] = mutable.Stack(mutable.ArrayBuffer.empty[Ref])
+  protected val scopes = mutable.Stack.empty[mutable.ArrayBuffer[Ref]]
 
   /** Impure statements in the current scope. Order is most recent to least recent. */
-  protected val impures: mutable.Stack[mutable.ArrayBuffer[Ref]] = mutable.Stack(mutable.ArrayBuffer.empty[Ref])
+  protected val impures = mutable.Stack.empty[mutable.ArrayBuffer[Ref]]
 
   /** Definition cache used for CSE */
-  protected var cache: Map[Def, Ref] = Map.empty
+  protected var caches = mutable.Stack.empty[mutable.HashMap[Def, Ref]]
+
+  protected def lookupCSE(df: Def): Option[Ref] = if (!cfg.enCSE) None else {
+    if (cfg.enCodeMotion) caches.collectFirst{case cache if cache.contains(df) => cache(df) }
+    else caches.head.get(df)
+  }
 
   /** Flow rules. */
   protected var flows: Vector[Flow] = Vector.empty
 
 
-  var log: Printer   = NullPrinter
+  var log: Printer   = new NullPrinter
   val dbg: Printer   = new Printer("", cfg.enDbg)
   val gen: Printer   = new Printer("", true)
-  val info: Printer  = new Printer(INFO, cfg.enInfo)
+  val info: Printer  = new Printer(INFO, cfg.enInfo).withStream(Console.out)
   val warn: Printer  = new Printer(WARN, cfg.enWarn).withStream(Console.out)
   val error: Printer = new Printer(ERROR, cfg.enError).withStream(Console.out)
   val bug: Printer   = new Printer(BUG, cfg.enError).withStream(Console.out)
 
 
   protected def register(lhs: Option[Ref], df: Def, flow: Option[Flow]): Sym = Option(df.rewrite).getOrElse{
-    val scope = scopes.head
+    val scope  = scopes.head
     val impure = impures.head
+    val cache  = caches.head
 
     // 2) Calculate effects
     val effects = df.effects.inContext(impure)
+
     // 3) Attempt to CSE
     if (effects.mayCSE) {
-      val cached = cache.get(df).filter(_.effects == effects)
+      val cached = lookupCSE(df).filter(_.effects == effects)
       if (cached.isDefined) return cached.get
     }
+
     // 4) Register in graph, in CSE cache, and in impure. Set effects
     val ref = lhs.getOrElse(new Ref(df))
     scope += ref
-    if (effects.mayCSE) cache += df -> ref
+    if (effects.mayCSE && cfg.enCSE) cache(df) = ref
     if (!effects.isPure) impure += ref
     ref.effects = effects
 
@@ -76,32 +84,24 @@ class Graph(var cfg: Config) {
     */
   def addWithFlow(df: Def)(flow: Flow): Sym = register(None, df, Some(flow))
 
-  def reAdd(sym: Sym): Sym
+  def add(sym: Sym): Sym
     = sym.stm.map{case (ref,df) => register(Some(ref),df, None) }.getOrElse(sym)
 
-  def reAddWithFlow(sym: Sym)(flow: Flow): Sym
+  def addWithFlow(sym: Sym)(flow: Flow): Sym
     = sym.stm.map{case (ref,df) => register(Some(ref),df,Some(flow)) }.getOrElse(sym)
 
 
-  /** Create a scope with no inputs.
-    *
-    * @param func
-    */
-  def scope(func: => Sym): Scope
+  /** Create a scope with no inputs. */
+  def scope(func: => Sym): Scope = lambda(Nil)(func)
 
-  /** Create a scope with bound inputs.
-    *
-    * @param inputs
-    * @param func
-    * @return
-    */
+  /** Create a scope with bound inputs. */
   def lambda(inputs: Seq[Dyn])(func: => Sym): Scope = {
     scopes.push(mutable.ArrayBuffer.empty[Ref])
     impures.push(mutable.ArrayBuffer.empty[Ref])
+    if (cfg.enCSE) caches.push(mutable.HashMap.empty[Def,Ref])
     val result = func
-    val block = schedule(inputs, result)
-
-    block
+    if (cfg.enCSE) caches.pop()
+    schedule(inputs, result)
   }
 
 

@@ -1,14 +1,17 @@
-import mill._, scalalib._
+import mill._
+import scalalib._
 
 trait CommonModule extends ScalaModule {
   override def scalaVersion = "2.13.0-M5"
 
   override def ivyDeps = Agg(
-    ivy"com.lihaoyi::utest::0.6.6",
-    ivy"org.scala-lang.modules::scala-parser-combinators:1.1.1"
+    ivy"com.lihaoyi::utest:0.6.6+14-2aed375c",
+    ivy"com.lihaoyi::fastparse:2.1.0"
   )
 
-  def testFrameworks = Seq("utest.runner.Framework")
+  object test extends Tests with TestModule {
+    def testFrameworks = Seq("utest.runner.Framework")
+  }
 
   override def scalacOptions = Seq(
     "-target:jvm-1.8",                   // JVM 1.8
@@ -55,4 +58,8 @@ object ichor extends CommonModule {
 
   override def moduleDeps = Seq(utils)
 
+}
+
+object eos extends CommonModule {
+  override def moduleDeps = Seq(ichor)
 }

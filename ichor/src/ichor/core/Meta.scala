@@ -1,7 +1,5 @@
 package ichor.core
 
-import ichor.Transformer
-
 sealed abstract class SetBy
 object SetBy {
   /** Metadata is set by the user. */
@@ -65,8 +63,6 @@ object Transfer extends Enumeration {
   * metadata is created.
   */
 abstract class Meta[T](val transfer: Transfer.Transfer) { self =>
-  final type Tx = Transformer
-
   def this(setBy: SetBy) = this(Transfer(setBy))
 
   /** Defines how to copy metadata during mirroring/updating. */

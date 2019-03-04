@@ -1,6 +1,5 @@
 package ichor.core
 
-import utils.escapeConst
 import scala.collection.mutable
 
 /** Any symbol. */
@@ -23,7 +22,7 @@ final class Ref(df: Def) extends Dyn {
 }
 
 /** A placeholder value. */
-final class Bnd extends Dyn
+final class Bound extends Dyn
 
 
 
@@ -35,7 +34,7 @@ case object Error extends Val
 
 final class Const(val c: Any, val tp: Type) extends Val {
   override def imm: Option[Any] = Some(c)
-  override def toString: String = escapeConst(c)
+  override def toString: String = tp.constString(c)
 
   override def equals(obj: Any): Boolean = obj match {
     case that: Const => this.c == that.c && this.tp =:= that.tp
@@ -46,6 +45,5 @@ final class Const(val c: Any, val tp: Type) extends Val {
 
 final class Param(var c: Any, val tp: Type) extends Val {
   override def imm: Option[Any] = Some(c)
-  override def toString: String = escapeConst(c)
 }
 

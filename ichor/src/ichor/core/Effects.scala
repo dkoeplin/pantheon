@@ -1,5 +1,7 @@
 package ichor.core
 
+import scala.collection.Seq
+
 /** The effects summary of a symbol.
   *
   * Effects metadata is "Ignore" since it should never be removed, but we always take the "old"
@@ -60,8 +62,8 @@ case class Effects(
     * simple - include the *most recent* previous simple effect as a scheduling dependency of a simple effect
     * global - include ALL global effects as scheduling dependencies of a global effect
     */
-  def inContext(impure: Iterable[Sym]): Effects = {
-    val antideps = if (global) impure
+  def inContext(impure: Seq[Sym]): Effects = {
+    val antideps = if (global) impure.toSeq
     else {
       val accesses = reads ++ writes  // Cannot read/write prior to allocation
 

@@ -1,7 +1,6 @@
 package utils
 
 import java.io.PrintStream
-import scala.util.parsing.input.Position
 
 trait PrettyPrinter {
   def prefix: String
@@ -13,12 +12,12 @@ trait PrettyPrinter {
   def apply(x: => Any): Unit = stream.println(s"$prefix$x")
 
   /** Print the given line with this Printer's prefix and the source context information. */
-  def apply(ctx: Position, x: => Any): Unit = stream.println(s"$prefix$ctx: $x")
+  def apply(ctx: Ctx, x: => Any): Unit = stream.println(s"$prefix$ctx: $x")
 
-  /** Print the source context content. If showCaret is true, include a line after pointing to the column. */
-  def apply(ctx: Position): Unit = {
-    val lines = ctx.longString.split('\n')
-    lines.foreach{line => apply(line) }
+  /** Print the source context content. */
+  def apply(ctx: Ctx): Unit = {
+    stream.println(s"$prefix${ctx.content}")
+    if (ctx.content.nonEmpty) stream.println(s"$prefix${ctx.caret}")
   }
 }
 

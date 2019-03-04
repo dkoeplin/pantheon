@@ -1,10 +1,10 @@
 package ichor
 
-import ichor.core.Graph
-
-import java.nio.file.{Files,Paths}
-
 object Main {
+
+}
+
+/*object Main {
 
   def main(args: Array[String]): Unit = {
     val file = "ichor/test/test.y"
@@ -21,4 +21,4 @@ object Main {
     graph.dbg.in(graph.logDir, "ast"){ astPrinter.run(body) }
   }
 
-}
+}*/
