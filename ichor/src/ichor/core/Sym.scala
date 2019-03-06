@@ -20,6 +20,10 @@ final class Ref(df: Def) extends Dyn {
   override def rhs: Option[Def] = Some(df)
   override def stm: Option[Stm] = Some((this,df))
 }
+object Ref {
+  def apply(df: Def): Ref = new Ref(df)
+  def unapply(sym: Sym): Option[Def] = sym.rhs
+}
 
 /** A placeholder value. */
 final class Bound extends Dyn

@@ -3,6 +3,7 @@ package eos.ast
 import ichor.core.Const
 import eos.types._
 import fastparse._
+import ichor.ast.Prefix
 
 trait Tokens extends ichor.ast.parsing.Tokens {
 
@@ -11,6 +12,19 @@ trait Tokens extends ichor.ast.parsing.Tokens {
   override val intChars: Set[Char] = Set('u', 'U', 'L')
   override val fpChars: Set[Char] = Set('f', 'd', 'h', 'b')
   def prefixes[_:P]: P[Unit] = P{ StringIn("0x") }
+
+  val precedence: Seq[Char] = Seq(
+    '^',
+    '%',
+    '*',
+    '/',
+    '+',
+    '-',
+  )
+
+  def Val[_:P]: P[Prefix] = P{ Key.W("val") }.map{_ => Prefix.VAL }
+  def Var[_:P]: P[Prefix] = P{ Key.W("var") }.map{_ => Prefix.VAR }
+  def Def[_:P]: P[Prefix] = P{ Key.W("def") }.map{_ => Prefix.DEF }
 
   override def literal(v: String, suffix: Char): Const = suffix match {
     case 'u' => new Const(v.toInt, U32)

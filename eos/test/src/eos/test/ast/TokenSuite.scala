@@ -2,30 +2,34 @@ package eos.test.ast
 
 import eos.ast.Tokens
 import utest._
-import ichor.core._
-import ichor.ast._
-import eos.types._
-import fastparse._
 
-object TokenSuite extends TestSuite { val tests = Tests{
+object TokenSuite extends TestSuite with ASTTests { val tests = Tests{
+  import eos.ast.implicits._
+
   val parser = new Tokens{ }
 
   'Hex - {
-    val expect = new Const(0x32, U32)
-    val Parsed.Success(s,_) = parse("0x32u", parser.Number(_))
-    require(s == expect, s"Parser returned $s. Expected $expect.")
+    val input  = "0x32u"
+    val expect = 0x32.u
+    parse_check(parser.Number(_))(input, expect)
+  }
+
+  "Int" - {
+    val input = "321290"
+    val expect = 321290
+    parse_check(parser.Number(_))(input, expect)
   }
 
   'Float - {
-    val expect = new Const(32.5e15f, FP32)
-    val Parsed.Success(s,_) = parse("32.5e15f", parser.Number(_))
-    require(s == expect, s"Parser returned $s. Expected $expect.")
+    val input  = "32.5e15f"
+    val expect = 32.5e15f
+    parse_check(parser.Number(_))(input, expect)
   }
 
   'Terms - {
-    val expect = new Term("__aadk_ried32__")
-    val Parsed.Success(s,_) = parse("__aadk_ried32__", parser.Term(_))
-    require(s == expect, s"Parser returned $s. Expected $expect.")
+    val input  = "__aadk_ried32__"
+    val expect = "__aadk_ried32__"
+    parse_check(parser.Term(_))(input, expect)
   }
 
 }}

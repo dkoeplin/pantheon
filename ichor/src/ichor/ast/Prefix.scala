@@ -10,7 +10,18 @@ case class Prefix(
   DEF: Boolean = false,
   VAL: Boolean = false,
   VAR: Boolean = false
-)
+) {
+  override def toString: String = {
+    ((if (DEF) Some("Prefix.DEF") else None) ++
+    (if (VAL) Some("Prefix.VAL") else None) ++
+    (if (VAR) Some("Prefix.VAR") else None)) mkString " | "
+  }
+  def |(that: Prefix): Prefix = Prefix(
+    this.DEF | that.DEF,
+    this.VAL | that.VAL,
+    this.VAR | that.VAR
+  )
+}
 object Prefix {
   val DEF = Prefix(DEF=true)
   val VAR = Prefix(VAR=true)

@@ -19,6 +19,3 @@ trait Def extends Product with Serializable {
   def effects: Effects = blocks.map(_.effects).foldLeft(Effects.Pure){_ andAlso _} andAlso Effects.Reads(mutableInputs:_*)
 }
 
-object Def {
-  def unapply(sym: Sym): Option[Def] = sym.rhs
-}

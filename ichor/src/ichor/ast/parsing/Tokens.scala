@@ -14,6 +14,7 @@ trait Tokens {
   )
   val isOpChar: Char => Boolean = {c => c.isLetterOrDigit || opChars.contains(c)  }
   val isIdChar: Char => Boolean = {c => c.isLetterOrDigit || c == '_' }
+  val isFirstIdChar: Char => Boolean = {c => c.isLetter || c == '_' }
   val intChars: Set[Char]
   val fpChars: Set[Char]
   def prefixes[_:P]: P[Unit]
@@ -47,11 +48,21 @@ trait Tokens {
   lazy val OpChar = CharIf(isOpChar)
   lazy val IdChar = CharIf(isIdChar)
 
-  def KeyWord[_:P]: P[Unit] = P{ keywords ~ !CharPred(IdChar) }.opaque("keyword")
-  def KeyOp[_:P]: P[Unit] = P{ keyops ~ !CharPred(OpChar) }.opaque("keyop")
+  def KeyWord[_:P]: P[Unit]
+    = P{ keywords ~ !CharPred(IdChar) }
+      .opaque("keyword")
 
-  def Id[_:P]: P[Unit] = P{ !KeyWord ~ CharsWhile(isIdChar) }.opaque("id")
-  def Op[_:P]: P[Unit] = P{ !KeyOp ~ (!StringIn("/*", "//") ~ CharsWhile(isOpChar)) }.opaque("op")
+  def KeyOp[_:P]: P[Unit]
+    = P{ keyops ~ !CharPred(OpChar) }
+      .opaque("keyop")
+
+  def Id[_:P]: P[Unit]
+    = P{ !KeyWord ~ CharPred(CharIf(isFirstIdChar)) ~ CharsWhile(isIdChar,0) }
+      .opaque("id")
+
+  def Op[_:P]: P[Unit]
+    = P{ !KeyOp ~ (!StringIn("/*", "//") ~ CharsWhile(isOpChar)) }
+      .opaque("op")
 
   def OpId[_:P]: P[Term] = P{ Op.! }.map{name => new Term(name) at ctx }
   def Term[_:P]: P[Term] = P{ Id.! }.map{name => new Term(name) at ctx }
@@ -76,7 +87,9 @@ trait Tokens {
       case -1 => lookup.length - 1
       case n => math.max(0, n - 1)
     }
-    val lineEndIndex = if (lookup.isDefinedAt(line + 1)) lookup(line + 1) else data.length-1
+    val lineEndIndex =
+      if (lookup.isDefinedAt(line + 1)) lookup(line + 1)
+      else data.length-1
 
     val col = index - lookup(line)
     val content = data.slice(lookup(line), lineEndIndex+1)

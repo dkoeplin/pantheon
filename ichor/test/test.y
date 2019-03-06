@@ -1,3 +1,17 @@
+#def macro(x: #Int): #Int = {
+  #for(i in 0 #until 32) {
+
+  }
+
+  #var i: #Int = 0
+  #while(i < 32) {
+
+    i += 1
+  }
+}
+
+
+
 Out function(In a, In b, Out c) = {
 
 }

@@ -15,6 +15,8 @@ case class Term(name: String) extends AST {
   }
 }
 
+case class BlockExp(block: Block) extends AST
+
 /** A function, val, or var declaration. */
 abstract class Decl extends AST {
   def prefix: Prefix
@@ -60,6 +62,11 @@ case class FuncCall(
     receiver: Term,
     function: Term,
     params: Seq[Seq[Sym]])
+  extends AST
+
+case class InfixChain(
+    syms: Seq[Sym],
+    ops:  Seq[Term])
   extends AST
 
 
